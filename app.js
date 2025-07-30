@@ -11,7 +11,8 @@
   let add_todo = document.getElementById('add-todo');
   let todo_list = document.getElementById('todo-list');
   let clear_all = document.getElementById('clear-all');
-
+  
+  let todo = [];
 
   window.onload = function () {
     getshow();
@@ -36,7 +37,7 @@
       }
   
 
-      console.log(`Adding todo: ${todo_text}`);
+      // console.log(`Adding todo: ${todo_text}`);
       
       todo_input.value = ''; 
   })
@@ -56,13 +57,23 @@
       
     }else{
       console.log('Fetched todos:', data);
+       
+       if (data.length >0) {
+          clear_all.style.display = 'block'; 
+        }else{
+          clear_all.style.display = 'none';
+        }
+      
+        todo = data;
+      console.log('Todo list:', todo);
 
       todo_list.innerHTML = '';
       for (let i = 0; i < data.length; i++) {
-          todo_list.innerHTML += `<li>${data[i].id} ${data[i].Todotext} 
+       
+          todo_list.innerHTML += `<li>${i + 1} ${data[i].Todotext} 
            <div class="todo-buttons">
         <button onclick="deleteTodo(${data[i].id})"><i class="fa-solid fa-trash"></i></button>
-        <button class="edit-btn" onclick="editTodo(${data[i].id})"><i class="fa-regular fa-pen-to-square"></i></button>
+        <button class="edit-btn" onclick="editTodo(${[i]})"><i class="fa-regular fa-pen-to-square"></i></button>
       </div>
           </li>
          
@@ -96,6 +107,8 @@
       
   }
 
+  
+
 
 
   clear_all.addEventListener('click', async function () {
@@ -114,33 +127,31 @@
   });
 
 
-  async function editTodo(id) {
-    console.log(`Editing todo with id: ${id}`);
-    let updatetext = todo_input.value.trim();
-    
-    if (updatetext === "") {
-      alert("Please enter a todo text to update.");
-      return;
-    }
-    
-    const { error } = await client
-    .from('Todo_list')
-    .update({ Todotext: updatetext })
-    .eq('id', id);
-
-
-    if (error) {
-      console.log(`Error editing todo with id ${id}:`, error);
+  async function editTodo(index) {
+     todo_input.value = todo[index].Todotext;
       
-    }
-    else {
-      console.log(`Todo with id ${id} updated successfully`);
-      getshow();
-    }
+  let newButton = add_todo.cloneNode(true);
+  add_todo.parentNode.replaceChild(newButton, add_todo);
+  add_todo = newButton; 
+      add_todo.textContent = 'Update';
 
-    todo_input.value = '';
-  }
+      add_todo.addEventListener('click' , async function () {
+      let updatetext = todo_input.value.trim();
+      const {error} = await client
+         .from('Todo_list')
+         .update({ Todotext: updatetext })
+         .eq('id', todo[index].id);
 
-
+         if (error) {
+           console.log(error.message);
+           
+         }else{
+            console.log(`Todo with id ${todo[index].id} updated successfully`);
+            getshow();
+            add_todo.textContent = 'Add';
+            todo_input.value = '';
+         }
+  })
+}
 
 
