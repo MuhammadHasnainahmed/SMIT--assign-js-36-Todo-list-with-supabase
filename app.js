@@ -18,9 +18,11 @@
     getshow();
   add_todo.addEventListener('click',async function () {
       let todo_text = todo_input.value.trim();
+
+
       
-      if (todo_text === '') {
-            console.error('Todo text cannot be empty');
+      if (!todo_text) {
+        toastr.error('Todo text cannot be empty', 'Error');
             return;
         
       }
@@ -33,6 +35,8 @@
           console.error('Error adding todo:', error);
           return;
       }else{
+        toastr.success('Task Add', 'success');
+
           getshow();
       }
   
@@ -70,7 +74,7 @@
       todo_list.innerHTML = '';
       for (let i = 0; i < data.length; i++) {
        
-          todo_list.innerHTML += `<li>${i + 1} ${data[i].Todotext} 
+          todo_list.innerHTML += `<li>${i + 1} ${data[i].Todotext.charAt(0).toUpperCase()}${data[i].Todotext.slice(1).toLowerCase()}
            <div class="todo-buttons">
         <button onclick="deleteTodo(${data[i].id})"><i class="fa-solid fa-trash"></i></button>
         <button class="edit-btn" onclick="editTodo(${[i]})"><i class="fa-regular fa-pen-to-square"></i></button>
@@ -122,7 +126,8 @@
           return;
       }else{
           todo_list.innerHTML = '';
-          console.log('All todos cleared successfully');
+           toastr.success('All todos cleared successfully', 'success');
+          
       }
   });
 
@@ -134,9 +139,14 @@
   add_todo.parentNode.replaceChild(newButton, add_todo);
   add_todo = newButton; 
       add_todo.textContent = 'Update';
-
+         
       add_todo.addEventListener('click' , async function () {
       let updatetext = todo_input.value.trim();
+
+      if (!updatetext) {
+          toastr.error('Todo text cannot be empty', 'Error');
+          return
+      }
       const {error} = await client
          .from('Todo_list')
          .update({ Todotext: updatetext })
